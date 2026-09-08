@@ -1,0 +1,9 @@
+{
+	"launcher" : {
+		"setupCompleted" : true,
+		"updateOnStartup" : false
+	},
+	"video" : {
+		"showIntro" : false
+	}
+}

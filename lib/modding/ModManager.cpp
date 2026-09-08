@@ -18,6 +18,8 @@
 #include "../json/JsonNode.h"
 #include "../texts/CGeneralTextHandler.h"
 
+#include <algorithm>
+
 static std::string getModDirectory(const TModID & modName)
 {
 	std::string result = modName;
@@ -189,6 +191,25 @@ void ModsPresetState::createInitialPreset()
 {
 	// TODO: scan mods directory for all its content? Probably unnecessary since this looks like new install, but who knows?
 	modConfig["presets"]["default"]["mods"].Vector().emplace_back("vcmi");
+
+	// Ready-to-play packages may bundle a list of pre-enabled mods shipped inside the package
+	if(CResourceHandler::get()->existsResource(ResourcePath("config/defaultMods.json")))
+	{
+		JsonNode defaults(JsonPath::builtin("config/defaultMods.json"));
+
+		auto & presetMods = modConfig["presets"]["default"]["mods"].Vector();
+		for(const auto & modID : defaults["mods"].Vector())
+		{
+			bool alreadyPresent = std::any_of(presetMods.begin(), presetMods.end(), [&](const JsonNode & entry){
+				return entry.String() == modID.String();
+			});
+			if(!alreadyPresent)
+				presetMods.push_back(modID);
+		}
+
+		for(const auto & entry : defaults["settings"].Struct())
+			modConfig["presets"]["default"]["settings"][entry.first] = entry.second;
+	}
 }
 
 void ModsPresetState::importInitialPreset()

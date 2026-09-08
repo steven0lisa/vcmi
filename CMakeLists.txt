@@ -50,6 +50,12 @@ option(ENABLE_TRANSLATIONS "Enable generation of translations for launcher and e
 option(ENABLE_MINIMAL_LIB "Build only core parts of vcmi library that are required for game lobby" OFF)
 option(ENABLE_GOLDMASTER "Build in public release mode in which some debug routines are disabled" OFF)
 
+# Ready-to-play distribution options. These allow building a package that works out of the box,
+# with Heroes III data files and a set of community mods bundled inside the package itself.
+option(ENABLE_BUNDLED_H3DATA "Bundle Heroes III data files from H3DATA_DIR into the package" OFF)
+set(H3DATA_DIR "${CMAKE_SOURCE_DIR}/h3data" CACHE PATH "Directory with Heroes III data (Data/, Maps/, Mp3/) to bundle when ENABLE_BUNDLED_H3DATA is ON")
+set(BUNDLE_MAIN_EXECUTABLE "launcher" CACHE STRING "Executable that the macOS app bundle launches on open: 'launcher' or 'client'")
+
 # AI libraries. Empty AI is always on
 
 option(ENABLE_NULLKILLER2_AI "Enable compilation of Nullkiller2AI library" ON)
@@ -803,8 +809,16 @@ if(ANDROID)
 else()
 	install(DIRECTORY scripts DESTINATION ${DATA_DIR})
 	install(DIRECTORY config DESTINATION ${DATA_DIR})
+	install(DIRECTORY packaging/ready-to-play/config DESTINATION ${DATA_DIR})
 	if (ENABLE_CLIENT OR ENABLE_SERVER)
 		install(DIRECTORY Mods DESTINATION ${DATA_DIR})
+	endif()
+	if(ENABLE_BUNDLED_H3DATA)
+		if(EXISTS "${H3DATA_DIR}/Data")
+			install(DIRECTORY "${H3DATA_DIR}/" DESTINATION ${DATA_DIR})
+		else()
+			message(FATAL_ERROR "ENABLE_BUNDLED_H3DATA is ON but ${H3DATA_DIR}/Data does not exist. Run packaging/ready-to-play/prepare_h3data.sh first.")
+		endif()
 	endif()
 endif()
 
@@ -933,7 +947,7 @@ elseif(MACOS AND NOT ENABLE_MONOLITHIC_INSTALL)
 	set(MACOSX_BUNDLE_GUI_IDENTIFIER "eu.vcmi.vcmi")
 	set(MACOSX_BUNDLE_BUNDLE_VERSION ${GIT_SHA1})
 	set(MACOSX_BUNDLE_SHORT_VERSION_STRING ${APP_SHORT_VERSION})
-	if(ENABLE_LAUNCHER)
+	if(ENABLE_LAUNCHER AND NOT BUNDLE_MAIN_EXECUTABLE STREQUAL "client")
 		set(MACOSX_BUNDLE_EXECUTABLE_NAME "vcmilauncher")
 	else()
 		set(MACOSX_BUNDLE_EXECUTABLE_NAME "vcmiclient")

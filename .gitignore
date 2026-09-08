@@ -77,3 +77,6 @@ compile_commands.json
 
 # CLion
 .idea/
+
+# Ready-to-play bundle: Heroes III data files are copyrighted, never commit them
+/h3data/
