@@ -29,5 +29,8 @@ for d in Data Maps Mp3 Mods; do
 	fi
 done
 
+echo "Applying mod compatibility patches"
+python3 "$(dirname "$0")/apply_mod_patches.py"
+
 echo "Done. Contents of $DEST:"
 du -sh "$DEST"/*
