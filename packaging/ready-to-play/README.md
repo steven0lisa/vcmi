@@ -24,7 +24,7 @@ Windows the install dir (next to the exe) plus `Documents\My Games\vcmi`.
 
 ## Build a ready-to-play package
 
-```bash
+```sh
 # 1. Provide the data (once):
 packaging/ready-to-play/prepare_h3data.sh "$HOME/Library/Application Support/vcmi"
 
